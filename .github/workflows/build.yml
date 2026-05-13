@@ -34,10 +34,43 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', 'h2/build.xml') }}
+          key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('h2/src/tools/org/h2/build/Build.java') }}
           restore-keys: |
             ${{ runner.os }}-m2-jdk${{ matrix.java }}-
             ${{ runner.os }}-m2-
+
+      # The h2 build downloads its deps from http://repo1.maven.org (see
+      # BuildBase.downloadUsingMaven). Maven Central no longer serves over
+      # plain HTTP, so the in-build download returns 0 bytes and the SHA1
+      # check fails. We work around it by pre-populating ~/.m2/repository
+      # via a modern `mvn` (which uses HTTPS Central by default): the build
+      # then resolves each artifact from the local Maven cache and skips
+      # its HTTP fallback entirely.
+      - name: Pre-fetch h2 build dependencies into ~/.m2/repository
+        run: |
+          set -euo pipefail
+          # Artifacts referenced by Build.download() and Build.downloadTest()
+          artifacts=(
+            "javax.servlet:javax.servlet-api:3.1.0"
+            "org.apache.lucene:lucene-core:5.5.5"
+            "org.apache.lucene:lucene-analyzers-common:5.5.5"
+            "org.apache.lucene:lucene-queryparser:5.5.5"
+            "org.slf4j:slf4j-api:1.6.0"
+            "org.slf4j:slf4j-nop:1.6.0"
+            "org.osgi:org.osgi.core:4.2.0"
+            "org.osgi:org.osgi.enterprise:4.2.0"
+            "org.locationtech.jts:jts-core:1.15.0"
+            "junit:junit:4.12"
+            "org.ow2.asm:asm:7.0"
+            "com.h2database:h2:1.2.127"
+            "org.postgresql:postgresql:42.2.5.jre7"
+          )
+          for gav in "${artifacts[@]}"; do
+            mvn -B -q \
+              org.apache.maven.plugins:maven-dependency-plugin:3.6.1:get \
+              -Dtransitive=false \
+              -Dartifact="$gav"
+          done
 
       - name: Build and test
         working-directory: h2
