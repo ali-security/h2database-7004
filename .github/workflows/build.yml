@@ -24,12 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: ${{ matrix.java }}
-
       - name: Cache Maven repository
         uses: actions/cache@v4
         with:
@@ -46,6 +40,18 @@ jobs:
       # via a modern `mvn` (which uses HTTPS Central by default): the build
       # then resolves each artifact from the local Maven cache and skips
       # its HTTP fallback entirely.
+      #
+      # The runner's `mvn` requires Java 8+ (plexus-classworlds is class
+      # version 52), so we install JDK 17 first, run the pre-fetch with it,
+      # then install the matrix JDK so that ./build.sh runs under the
+      # requested version (it reads JAVA_HOME, which setup-java overwrites
+      # on each invocation).
+      - name: Set up JDK 17 for Maven pre-fetch
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
       - name: Pre-fetch h2 build dependencies into ~/.m2/repository
         run: |
           set -euo pipefail
@@ -71,6 +77,12 @@ jobs:
               -Dtransitive=false \
               -Dartifact="$gav"
           done
+
+      - name: Set up JDK ${{ matrix.java }} for h2 build
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: ${{ matrix.java }}
 
       - name: Build and test
         working-directory: h2
