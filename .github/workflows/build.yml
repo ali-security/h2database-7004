@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Test (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 7, 8, 11 ]
+
+    env:
+      JAVA_OPTS: -Xmx512m
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: ${{ matrix.java }}
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', 'h2/build.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-jdk${{ matrix.java }}-
+            ${{ runner.os }}-m2-
+
+      - name: Build and test
+        working-directory: h2
+        run: ./build.sh jar testTravis
+
+      - name: Upload h2-1.4.200.jar
+        if: matrix.java == 11
+        uses: actions/upload-artifact@v4
+        with:
+          name: h2-1.4.200.jar
+          path: h2/bin/h2-1.4.200.jar
+          retention-days: 1
+          if-no-files-found: error
