@@ -149,7 +149,17 @@ public class JdbcConnection extends TraceObject implements Connection, JdbcConne
      * INTERNAL
      */
     public JdbcConnection(String url, Properties info) throws SQLException {
-        this(new ConnectionInfo(url, info), true);
+        this(new ConnectionInfo(url, info), true, false);
+    }
+
+    /**
+     * INTERNAL
+     * @param url the database URL
+     * @param info the connection properties
+     * @param forbidCreation whether database creation is forbidden
+     */
+    public JdbcConnection(String url, Properties info, boolean forbidCreation) throws SQLException {
+        this(new ConnectionInfo(url, info), true, forbidCreation);
     }
 
     /**
@@ -162,7 +172,23 @@ public class JdbcConnection extends TraceObject implements Connection, JdbcConne
     @SuppressWarnings("resource")
     public JdbcConnection(ConnectionInfo ci, boolean useBaseDir)
             throws SQLException {
+        this(ci, useBaseDir, false);
+    }
+
+    /**
+     * INTERNAL
+     */
+    /*
+     * the session closable object does not leak as Eclipse warns - due to the
+     * CloseWatcher.
+     */
+    @SuppressWarnings("resource")
+    public JdbcConnection(ConnectionInfo ci, boolean useBaseDir, boolean forbidCreation)
+            throws SQLException {
         try {
+            if (forbidCreation) {
+                ci.setProperty("FORBID_CREATION", "TRUE");
+            }
             if (useBaseDir) {
                 String baseDir = SysProperties.getBaseDir();
                 if (baseDir != null) {

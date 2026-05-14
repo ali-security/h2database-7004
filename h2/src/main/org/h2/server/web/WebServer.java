@@ -775,14 +775,8 @@ public class WebServer implements Service {
         // do not trim the password, otherwise an
         // encrypted H2 database with empty user password doesn't work
         p.setProperty("password", password);
-        if (databaseUrl.startsWith("jdbc:h2:")) {
-            if (!allowSecureCreation || key == null || !key.equals(userKey)) {
-                if (ifExists) {
-                    databaseUrl += ";FORBID_CREATION=TRUE";
-                }
-            }
-        }
-        return JdbcUtils.getConnection(driver, databaseUrl, p, networkConnectionInfo);
+        boolean forbidCreation = ifExists && (!allowSecureCreation || key == null || !key.equals(userKey));
+        return JdbcUtils.getConnection(driver, databaseUrl, p, networkConnectionInfo, forbidCreation);
     }
 
     /**

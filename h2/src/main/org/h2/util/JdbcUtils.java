@@ -265,6 +265,23 @@ public class JdbcUtils {
      */
     public static Connection getConnection(String driver, String url,
             String user, String password) throws SQLException {
+        return getConnection(driver, url, user, password, null, false);
+    }
+
+    /**
+     * Open a new database connection with the given settings.
+     *
+     * @param driver the driver class name
+     * @param url the database URL
+     * @param user the user name
+     * @param password the password
+     * @param networkConnectionInfo the network connection information, or {@code null}
+     * @param forbidCreation whether database creation is forbidden
+     * @return the database connection
+     */
+    public static Connection getConnection(String driver, String url,
+            String user, String password, NetworkConnectionInfo networkConnectionInfo,
+            boolean forbidCreation) throws SQLException {
         Properties prop = new Properties();
         if (user != null) {
             prop.setProperty("user", user);
@@ -272,7 +289,7 @@ public class JdbcUtils {
         if (password != null) {
             prop.setProperty("password", password);
         }
-        return getConnection(driver, url, prop, null);
+        return getConnection(driver, url, prop, networkConnectionInfo, forbidCreation);
     }
 
     /**
@@ -286,14 +303,30 @@ public class JdbcUtils {
      */
     public static Connection getConnection(String driver, String url, Properties prop,
             NetworkConnectionInfo networkConnectionInfo) throws SQLException {
-        Connection connection = getConnection(driver, url, prop);
+        return getConnection(driver, url, prop, networkConnectionInfo, false);
+    }
+
+    /**
+     * Open a new database connection with the given settings.
+     *
+     * @param driver the driver class name
+     * @param url the database URL
+     * @param prop the properties containing at least the user name and password
+     * @param networkConnectionInfo the network connection information, or {@code null}
+     * @param forbidCreation whether database creation is forbidden
+     * @return the database connection
+     */
+    public static Connection getConnection(String driver, String url, Properties prop,
+            NetworkConnectionInfo networkConnectionInfo, boolean forbidCreation) throws SQLException {
+        Connection connection = getConnection(driver, url, prop, forbidCreation);
         if (networkConnectionInfo != null && connection instanceof JdbcConnection) {
             ((JdbcConnection) connection).getSession().setNetworkConnectionInfo(networkConnectionInfo);
         }
         return connection;
     }
 
-    private static Connection getConnection(String driver, String url, Properties prop) throws SQLException {
+    private static Connection getConnection(String driver, String url, Properties prop,
+            boolean forbidCreation) throws SQLException {
         if (StringUtils.isNullOrEmpty(driver)) {
             JdbcUtils.load(url);
         } else {
@@ -329,6 +362,9 @@ public class JdbcUtils {
                 throw DbException.toSQLException(e);
             }
             // don't know, but maybe it loaded a JDBC Driver
+        }
+        if (url.startsWith(Constants.START_URL) && forbidCreation) {
+            return new JdbcConnection(url, prop, forbidCreation);
         }
         return DriverManager.getConnection(url, prop);
     }

@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.h2.jdbc.JdbcConnection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -93,8 +94,8 @@ public class TcpServer implements Service {
         prop.setProperty("user", "");
         prop.setProperty("password", managementPassword);
         // avoid using the driver manager
-        Connection conn = Driver.load().connect("jdbc:h2:" +
-                getManagementDbName(port), prop);
+        Connection conn = new JdbcConnection("jdbc:h2:" +
+                getManagementDbName(port), prop, false);
         managementDb = conn;
 
         try (Statement stat = conn.createStatement()) {
@@ -463,7 +464,10 @@ public class TcpServer implements Service {
                 Connection conn = null;
                 PreparedStatement prep = null;
                 try {
-                    conn = DriverManager.getConnection("jdbc:h2:" + url + "/" + db, "", password);
+                    Properties prop = new Properties();
+                    prop.setProperty("user", "");
+                    prop.setProperty("password", password);
+                    conn = new JdbcConnection("jdbc:h2:" + url + "/" + db, prop, true);
                     prep = conn.prepareStatement("CALL STOP_SERVER(?, ?, ?)");
                     prep.setInt(1, all ? 0 : port);
                     prep.setString(2, password);
