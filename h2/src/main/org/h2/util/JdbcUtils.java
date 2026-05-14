@@ -328,7 +328,7 @@ public class JdbcUtils {
 
     private static Connection getConnection(String driver, String url, Properties prop,
             boolean forbidCreation) throws SQLException {
-        if (url.startsWith(Constants.START_URL)) {
+        if (forbidCreation && url.startsWith(Constants.START_URL)) {
             return new JdbcConnection(url, prop, forbidCreation);
         }
         if (StringUtils.isNullOrEmpty(driver)) {
