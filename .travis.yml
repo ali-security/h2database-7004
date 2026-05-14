@@ -6,6 +6,21 @@ cache:
   directories:
     - $HOME/.m2/repository
 
+before_install:
+  - mkdir -p $HOME/.m2
+  - |
+    cat > $HOME/.m2/settings.xml <<'EOF'
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+        <mirrors>
+            <mirror>
+            <id>central-insecure</id>
+            <url>http://insecure.repo1.maven.org/maven2</url>
+            <mirrorOf>central</mirrorOf>
+            </mirror>
+        </mirrors>
+    </settings>
+    EOF
+
 matrix:
   include:
     - jdk: openjdk11
@@ -16,17 +31,17 @@ matrix:
         - "cd h2"
         - "echo $JAVA_OPTS"
         - "export JAVA_OPTS=-Xmx512m"
-    # - jdk: oraclejdk8
-    #   dist: trusty
-    #   group: edge
-    #   sudo: required
-    #   before_script:
-    #     - "cd h2"
-    #     - "echo $JAVA_OPTS"
-    #     - "export JAVA_OPTS=-Xmx512m"
-    # - jdk: openjdk7
-    #   dist: trusty
-    #   group: edge
-    #   sudo: required
-    #   before_script:
-    #     - "cd h2"
+    - jdk: oraclejdk8
+      dist: trusty
+      group: edge
+      sudo: required
+      before_script:
+        - "cd h2"
+        - "echo $JAVA_OPTS"
+        - "export JAVA_OPTS=-Xmx512m"
+    - jdk: openjdk7
+      dist: trusty
+      group: edge
+      sudo: required
+      before_script:
+        - "cd h2"

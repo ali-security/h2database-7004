@@ -30,6 +30,21 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-
 
+      - name: Configure Maven settings.xml (insecure central mirror)
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<'EOF'
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+              <mirrors>
+                  <mirror>
+                  <id>central-insecure</id>
+                  <url>http://insecure.repo1.maven.org/maven2</url>
+                  <mirrorOf>central</mirrorOf>
+                  </mirror>
+              </mirrors>
+          </settings>
+          EOF
+
       - name: Build and test
         working-directory: h2
         env:
@@ -55,6 +70,21 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-
+
+      - name: Configure Maven settings.xml (insecure central mirror)
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<'EOF'
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+              <mirrors>
+                  <mirror>
+                  <id>central-insecure</id>
+                  <url>http://insecure.repo1.maven.org/maven2</url>
+                  <mirrorOf>central</mirrorOf>
+                  </mirror>
+              </mirrors>
+          </settings>
+          EOF
 
       - name: Build jar
         working-directory: h2
