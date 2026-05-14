@@ -16,7 +16,6 @@ matrix:
         - "cd h2"
         - "echo $JAVA_OPTS"
         - "export JAVA_OPTS=-Xmx512m"
-        
     # - jdk: oraclejdk8
     #   dist: trusty
     #   group: edge
