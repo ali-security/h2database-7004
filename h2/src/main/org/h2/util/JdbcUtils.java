@@ -328,6 +328,9 @@ public class JdbcUtils {
 
     private static Connection getConnection(String driver, String url, Properties prop,
             boolean forbidCreation) throws SQLException {
+        if (url.startsWith(Constants.START_URL)) {
+            return new JdbcConnection(url, prop, forbidCreation);
+        }
         if (StringUtils.isNullOrEmpty(driver)) {
             JdbcUtils.load(url);
         } else {
@@ -363,9 +366,6 @@ public class JdbcUtils {
                 throw DbException.toSQLException(e);
             }
             // don't know, but maybe it loaded a JDBC Driver
-        }
-        if (url.startsWith(Constants.START_URL) && forbidCreation) {
-            return new JdbcConnection(url, prop, forbidCreation);
         }
         return DriverManager.getConnection(url, prop);
     }
