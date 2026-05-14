@@ -19,6 +19,7 @@ import javax.naming.Context;
 import javax.sql.DataSource;
 import org.h2.api.CustomDataTypesHandler;
 import org.h2.api.ErrorCode;
+import org.h2.engine.Constants;
 import org.h2.api.JavaObjectSerializer;
 import org.h2.engine.SysProperties;
 import org.h2.jdbc.JdbcConnection;
