@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  LANG: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+  _JAVA_OPTIONS: "-Duser.country=US -Duser.language=en"
+
 jobs:
   test:
     name: Test (JDK ${{ matrix.java }})
